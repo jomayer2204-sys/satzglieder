@@ -277,7 +277,6 @@
   .qr-box p { max-width: 340px; margin: 0 0 8px; }
   #qr-img { width: 230px; height: 230px; flex: none; }
   #qr-img svg { width: 100%; height: 100%; display: block; }
-  body.kid .qr-box { display: none; }
   .qfoot { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 
   .hud { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -1136,7 +1135,7 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
       '<li>Die Datei ist komplett eigenständig. Sie braucht kein Internet und läuft im Browser von iPad, Laptop und Whiteboard-PC.</li>' +
       '<li>Präsentation: im Reiter "Präsentation" auf Vollbild klicken. Mit der Leertaste oder dem Pfeil geht es Schritt für Schritt weiter.</li>' +
       '<li>Arbeitsblatt drucken: "Als PDF herunterladen" öffnet das Druckfenster. Dort "Als PDF speichern" wählen oder direkt drucken. Mit "Nur Level 1/2/3" druckst du gezielt ein Level plus Fragenkarte.</li>' +
-      '<li>Für die Kinder gibt es einen eigenen Link (am Ende mit ?kind) und einen QR-Code zum Ausdrucken, siehe Datei qr.html. Über diesen Link sehen sie nur das Quiz, ohne Reiter für Lösungen und Tipps.</li></ul></div>' +
+      '<li>Für die Kinder gibt es einen eigenen Link (am Ende mit ?kind), den QR-Code findest du unten im Reiter "Quiz". Über diesen Link sehen sie nur das Quiz, ohne Reiter für Lösungen und Tipps.</li></ul></div>' +
 
       '<div class="doc"><h2>Hefteintrag (Vorschlag)</h2>' +
       '<p class="merk">Ein Satzglied ist ein Wort oder eine Wortgruppe, die beim Umstellen zusammenbleibt. Wir bestimmen Satzglieder mit Fragen: Prädikat (Was tut jemand?), Subjekt (Wer oder Was?), Akkusativobjekt (Wen oder Was?), Dativobjekt (Wem?), Ort (Wo?), Zeit (Wann?), Grund (Warum?).</p></div>';
@@ -1172,7 +1171,7 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
 
   var QUIZ_URL = 'https://jomayer2204-sys.github.io/satzglieder/?kind#quiz';
   function renderQR() {
-    if (KID || typeof qrcode !== 'function') return;
+    if (typeof qrcode !== 'function') return;
     var q = qrcode(0, 'M');
     q.addData(QUIZ_URL);
     q.make();

@@ -388,7 +388,7 @@
       </div>
       <div class="card teacher">
         <h3>Nur für die Lehrkraft</h3>
-        <p>Lösungen zum Arbeitsblatt und Tipps für den Stundenverlauf. Beides ist mit einem Code geschützt.</p>
+        <p>Lösungen zum Arbeitsblatt und Tipps für den Stundenverlauf.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn ghost small" data-goto="loesungen">Lösungen</button>
           <button class="btn ghost small" data-goto="tipps">Lehrertipps</button>
@@ -434,7 +434,6 @@
         <h1>Deine Satzglieder-Reise</h1>
         <p>Drei Stationen. Tippe die Satzglieder an und sammle Sterne.</p>
       </div>
-      <div class="path" id="q-path"></div>
       <div class="qr-box" id="qr-box">
         <div id="qr-img"></div>
         <div>
@@ -443,6 +442,7 @@
           <p class="note" id="qr-url"></p>
         </div>
       </div>
+      <div class="path" id="q-path"></div>
       <div class="qfoot">
         <button class="btn" id="q-cert-btn">Meine Urkunde</button>
         <button class="btn ghost" id="q-reset">Neu starten</button>
@@ -531,8 +531,6 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
   /* =========================================================
      Einstellungen
      ========================================================= */
-  // Einfacher Schutz gegen neugierige Kinderaugen, kein echter Passwortschutz.
-  var TEACHER_CODE = 'kreide';
   var STORE_KEY = 'satzglieder-quiz-v1';
 
   /* =========================================================
@@ -1036,28 +1034,9 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
   /* =========================================================
      Lehrkraft: Code, Lösungen, Tipps
      ========================================================= */
-  var unlocked = false;
-  try { unlocked = sessionStorage.getItem('lk-ok') === '1'; } catch (e) { /* ignorieren */ }
+  $$('[data-gate]').forEach(function (g) { g.hidden = true; });
+  $$('[data-gate-content]').forEach(function (c) { c.hidden = false; });
 
-  function applyGate() {
-    $$('[data-gate]').forEach(function (g) { g.hidden = unlocked; });
-    $$('[data-gate-content]').forEach(function (c) { c.hidden = !unlocked; });
-  }
-  $$('[data-gate-form]').forEach(function (f) {
-    f.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var inp = $('input', f), err = $('.err', f);
-      if (inp.value.trim().toLowerCase() === TEACHER_CODE) {
-        unlocked = true;
-        try { sessionStorage.setItem('lk-ok', '1'); } catch (x) { /* ignorieren */ }
-        inp.value = '';
-        applyGate();
-      } else {
-        err.textContent = 'Der Code stimmt nicht.';
-        inp.value = '';
-      }
-    });
-  });
 
   function renderSolutions() {
     var html = '<div class="doc" id="sol-karte"><h2>Fragenkarte (ausgefüllt)</h2>' + fragenkarte(true) + '</div>';
@@ -1129,7 +1108,7 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
       '<li>Die Level haben unterschiedlich viele Fragen (Level 1: 10, Level 2: 22, Level 3: 23). Deshalb gibt es einen Gewinner pro Level: höchste Punktzahl, bei Gleichstand weniger Fehler.</li>' +
       '<li>Die Urkunde zeigt Name, Rang, Sterne und Punkte. Die Kinder rufen im Sitzkreis ihre Punkte, du schreibst sie an die Tafel.</li>' +
       '<li>Der Spielstand wird nur auf dem jeweiligen Gerät gespeichert. Wenn zwei Kinder dasselbe iPad nutzen: "Neu starten" auf der Reisekarte.</li>' +
-      '<li>Zum Schummeln: Die Lösungen sind hinter dem Code "' + esc(TEACHER_CODE) + '" versteckt. Der Code steht oben im Skript der Datei und lässt sich dort ändern. Er hält Kinder ab, ist aber kein echter Passwortschutz.</li></ul></div>' +
+      '</ul></div>' +
 
       '<div class="doc"><h2>Technik</h2><ul>' +
       '<li>Die Datei ist komplett eigenständig. Sie braucht kein Internet und läuft im Browser von iPad, Laptop und Whiteboard-PC.</li>' +
@@ -1441,7 +1420,6 @@ var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=ne
   renderWorksheet();
   renderSolutions();
   renderTips();
-  applyGate();
   var startView = (location.hash || '').replace('#', '');
   showView(VIEWS.indexOf(startView) >= 0 ? startView : 'start');
   window.addEventListener('hashchange', function () {

@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satzglieder: Stunde mit Quiz</title>
+<style>
+  :root {
+    --bg: #fbf8f1;
+    --card: #ffffff;
+    --ink: #26323f;
+    --muted: #5d6b7a;
+    --line: #d9d2c3;
+    --brand: #2f5fb3;
+    --brand-dark: #244a8c;
+    --l1: #3f9a6a;
+    --l2: #d68a1f;
+    --l3: #c0392b;
+
+    --c-S: #d64545;     --t-S: #fde3e3;
+    --c-P: #2563c9;     --t-P: #dbe7fb;
+    --c-AO: #1f9d55;    --t-AO: #d9f2e2;
+    --c-DO: #e07b00;    --t-DO: #fde8cc;
+    --c-ORT: #8e44ad;   --t-ORT: #eedcf6;
+    --c-ZEIT: #0e8f9a;  --t-ZEIT: #d5f0f2;
+    --c-GRUND: #c0486e; --t-GRUND: #fadde7;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, "Avenir Next", Verdana, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  button { font-family: inherit; touch-action: manipulation; }
+  h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; }
+  p { margin: 0 0 .8em; }
+
+  /* ---------- Rollenfarben ---------- */
+  .r-S     { --c: var(--c-S);     --t: var(--t-S);     --bs: solid; }
+  .r-P     { --c: var(--c-P);     --t: var(--t-P);     --bs: double; }
+  .r-AO    { --c: var(--c-AO);    --t: var(--t-AO);    --bs: dashed; }
+  .r-DO    { --c: var(--c-DO);    --t: var(--t-DO);    --bs: dotted; }
+  .r-ORT   { --c: var(--c-ORT);   --t: var(--t-ORT);   --bs: solid; }
+  .r-ZEIT  { --c: var(--c-ZEIT);  --t: var(--t-ZEIT);  --bs: solid; }
+  .r-GRUND { --c: var(--c-GRUND); --t: var(--t-GRUND); --bs: solid; }
+
+  /* ---------- Kopf und Navigation ---------- */
+  .top {
+    position: sticky; top: 0; z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 10px 20px;
+  }
+  .brand { font-weight: 800; font-size: 18px; color: var(--brand-dark); letter-spacing: .2px; }
+  .nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  .nav button {
+    border: 0; background: transparent; color: var(--ink);
+    font-size: 16px; font-weight: 600; padding: 9px 14px; border-radius: 10px; cursor: pointer;
+  }
+  .nav button:hover { background: #eef2f9; }
+  .nav button.active { background: var(--brand); color: #fff; }
+  .nav .sep { width: 1px; background: var(--line); margin: 6px 6px; }
+  .nav button.teacher { color: var(--muted); }
+  .nav button.teacher.active { color: #fff; }
+
+  body.kid .nav { display: none; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 70px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .btn {
+    display: inline-block; border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--brand); color: #fff; font-size: 17px; font-weight: 700;
+    padding: 12px 22px; text-decoration: none;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn.ghost { background: #fff; color: var(--brand-dark); border: 2px solid var(--brand); }
+  .btn.ghost:hover { background: #eef2f9; }
+  .btn.small { font-size: 14px; padding: 8px 14px; border-radius: 9px; }
+  .btn.big { font-size: 22px; padding: 16px 34px; border-radius: 16px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+
+  /* ---------- Start ---------- */
+  .hero { text-align: center; padding: 26px 10px 8px; }
+  .hero h1 { font-size: clamp(34px, 6vw, 56px); margin-bottom: 6px; }
+  .hero p.lead { font-size: 20px; color: var(--muted); max-width: 640px; margin: 0 auto 18px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 16px 0 6px; }
+  .legend-row .chip { font-size: 15px; padding: 6px 12px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 26px 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card h3 { font-size: 21px; margin: 0; }
+  .card p { color: var(--muted); margin: 0; flex: 1; }
+  .card .btn { align-self: flex-start; margin-top: 8px; }
+  .card.teacher { background: #f4f1e8; border-style: dashed; }
+  .step-num {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--brand); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
+  }
+
+  .chip {
+    display: inline-block; padding: 4px 11px; border-radius: 999px; font-weight: 700; font-size: 14px;
+    background: var(--t); color: #1b2430; border: 2px solid var(--c); border-style: var(--bs, solid);
+  }
+
+  /* ---------- Satzglieder-Chips (Anzeige und Quiz) ---------- */
+  .sent { display: flex; flex-wrap: wrap; gap: 34px 10px; align-items: flex-start; }
+  .tp { display: inline-flex; align-items: baseline; }
+  .pu { font-size: inherit; margin-left: 1px; }
+  .tok {
+    position: relative;
+    font: inherit; color: var(--ink);
+    background: #fff;
+    border: 3px solid var(--line);
+    border-radius: 12px;
+    padding: 6px 13px;
+    cursor: pointer;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tok.on {
+    background: var(--t); border-color: var(--c); border-style: var(--bs, solid);
+    cursor: default;
+  }
+  .tok.static { cursor: default; }
+  .tok.static:not(.on) { background: transparent; border-color: transparent; padding-left: 2px; padding-right: 2px; }
+  .lab {
+    position: absolute; left: 2px; top: 100%; margin-top: 5px;
+    font-style: normal; font-weight: 800; font-size: .52em; color: var(--c);
+    white-space: nowrap; opacity: 0; transition: opacity .25s;
+  }
+  .lab.show, .tok.static.on .lab { opacity: 1; }
+  .tok.wrong { animation: shake .4s; border-color: #d33 !important; background: #ffecec; }
+  .tok.pulse:not(.on) { animation: pulse 1s infinite; }
+  @keyframes shake { 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(47,95,179,.35); } }
+
+  /* ---------- Präsentation ---------- */
+  .stage {
+    background: #fff; border: 1px solid var(--line); border-radius: 20px;
+    min-height: min(72vh, 640px); display: flex; flex-direction: column; overflow: hidden;
+  }
+  .slides { flex: 1; position: relative; padding: clamp(18px, 3.4vw, 44px); }
+  .slide { display: none; font-size: clamp(18px, 2.1vw, 26px); }
+  .slide.active { display: block; }
+  .slide h2 { font-size: clamp(28px, 4.2vw, 48px); margin-bottom: .35em; }
+  .slide h2 small { display: block; font-size: .42em; color: var(--muted); font-weight: 600; margin-top: 4px; }
+  .slide .sent { font-size: clamp(22px, 3.2vw, 40px); margin: 22px 0 48px; }
+  .slide .lead { color: var(--muted); }
+  .slide.title-slide { text-align: center; padding-top: 6vh; }
+  .slide.title-slide h2 { font-size: clamp(40px, 8vw, 88px); }
+  .merk {
+    background: #fff8dc; border-left: 8px solid #e0b800; border-radius: 10px;
+    padding: 14px 20px; margin: 18px 0; font-weight: 600;
+  }
+  .qline {
+    display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+    padding: 8px 0; border-bottom: 1px dashed var(--line);
+  }
+  .qline .chip { font-size: .75em; }
+  [data-step].reveal:not(.on) { visibility: hidden; }
+  .tok[data-step]:not(.on) { background: #fff; border-color: var(--line); border-style: solid; }
+  .tok[data-step]:not(.on) .lab { opacity: 0; }
+  .tok[data-step].on .lab { opacity: 1; }
+
+  .um-box { display: flex; flex-wrap: wrap; gap: 14px 12px; align-items: baseline; margin: 26px 0 8px; font-size: clamp(22px, 3.4vw, 40px); }
+  .um { display: block; border: 3px solid var(--c); border-style: var(--bs); background: var(--t); border-radius: 12px; padding: 6px 14px; }
+  .um.first::first-letter { text-transform: uppercase; }
+  .um-dot { order: 99; margin-left: -8px; }
+
+  .stage-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 10px 16px; border-top: 1px solid var(--line); background: #faf7ef;
+  }
+  .stage-bar .count { font-weight: 700; color: var(--muted); }
+  .dots { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: block; }
+  .dots i.cur { background: var(--brand); transform: scale(1.3); }
+
+  .karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 14px; }
+  .karte { background: var(--t); border: 3px solid var(--c); border-style: var(--bs); border-radius: 14px; padding: 10px 16px; }
+  .karte b { display: block; font-size: 1.05em; }
+  .karte .q { font-size: 1.15em; font-weight: 800; color: var(--c); }
+  .karte .ex { font-size: .8em; color: var(--muted); }
+  .lvl-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
+  .lvl-card { border-radius: 16px; padding: 16px 20px; color: #fff; }
+  .lvl-card h3 { margin: 0 0 4px; }
+  .lvl-card p { margin: 0; font-size: .85em; }
+
+  /* ---------- Arbeitsblatt ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+  .ws {
+    background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px 32px; max-width: 820px; margin: 0 auto 28px;
+  }
+  .ws-head { border-bottom: 3px solid var(--ink); padding-bottom: 10px; margin-bottom: 16px; }
+  .ws-head h1 { font-size: 27px; margin-bottom: 4px; }
+  .ws-head .sub { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+  .fields { display: flex; gap: 26px; flex-wrap: wrap; font-size: 14px; }
+  .fields span { border-bottom: 1px solid #333; min-width: 150px; display: inline-block; padding: 2px 6px 2px 0; }
+  .lvl-band {
+    display: flex; align-items: center; gap: 14px; color: #fff; border-radius: 12px; padding: 10px 18px; margin-bottom: 14px;
+  }
+  .lvl-band h2 { margin: 0; font-size: 24px; }
+  .lvl-band .stars { font-size: 20px; letter-spacing: 2px; }
+  .ws h3.aufgabe { font-size: 18px; margin: 22px 0 6px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .ws .hinweis { background: #eef3ee; border-left: 5px solid var(--l1); border-radius: 6px; padding: 8px 14px; font-size: 15px; margin: 8px 0 12px; }
+  .farbleiste { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 6px; }
+  ol.wslist { margin: 8px 0; padding-left: 28px; }
+  ol.wslist li { font-size: 20px; line-height: 2.7; padding-left: 4px; border-bottom: 1px dotted #ddd; break-inside: avoid; }
+  table.fk { width: 100%; border-collapse: collapse; font-size: 16px; }
+  table.fk th, table.fk td { border: 1px solid #bfb8a8; padding: 7px 10px; text-align: left; vertical-align: middle; }
+  table.fk th { background: #f2efe8; }
+  table.fk td.blank { min-width: 190px; height: 44px; }
+  table.fk .swatch { display: inline-block; width: 100%; height: 22px; border-radius: 6px; background: var(--t); border: 3px solid var(--c); border-style: var(--bs); }
+  .lines p { border-bottom: 1px solid #aaa; height: 34px; margin: 0; }
+  .sent.sm { gap: 24px 3px; font-size: 15px; padding-bottom: 14px; }
+  .sent.sm .tok { padding: 3px 8px; border-width: 2px; }
+  .sent.sm .tok.static:not(.on) { padding: 3px 1px; }
+  .sent.sm .lab { font-size: 11px; }
+  table.fk td.blank { min-width: 150px !important; }
+  .lueck { font-size: 19px; line-height: 2.4; }
+  .lueck .gap { display: inline-block; min-width: 190px; border-bottom: 1.5px solid #333; }
+  .lueck small { color: var(--muted); }
+
+  /* ---------- Lehrkraft ---------- */
+  .gate { max-width: 460px; margin: 40px auto; text-align: center; background: #fff; border: 1px dashed var(--line); border-radius: 16px; padding: 28px; }
+  .gate input { font-size: 18px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 10px; width: 100%; margin: 10px 0 14px; }
+  .gate .err { color: #b3261e; min-height: 1.4em; font-weight: 600; }
+  .doc { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 26px 30px; margin-bottom: 22px; }
+  .doc h2 { font-size: 24px; margin-bottom: 10px; }
+  .doc h3 { font-size: 18px; margin-top: 18px; }
+  .doc table { width: 100%; border-collapse: collapse; font-size: 15.5px; margin: 8px 0 14px; }
+  .doc th, .doc td { border: 1px solid #cfc9bd; padding: 8px 10px; text-align: left; vertical-align: top; }
+  .doc th { background: #f2efe8; }
+  .doc ul { margin: 6px 0 12px; padding-left: 22px; }
+  .doc li { margin-bottom: 4px; }
+  .sol-item { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 10px; }
+  .sol-item .n { font-weight: 800; color: var(--muted); padding-top: 9px; min-width: 24px; }
+  .sol-item .sent { font-size: 19px; gap: 28px 6px; padding-bottom: 14px; }
+  .note { color: var(--muted); font-size: 14px; }
+
+  /* ---------- Quiz ---------- */
+  .qscreen { display: none; }
+  .qscreen.active { display: block; }
+  .qhead { text-align: center; margin-bottom: 18px; }
+  .qhead h1 { font-size: clamp(30px, 5vw, 46px); margin-bottom: 4px; }
+  .qhead p { color: var(--muted); font-size: 18px; margin: 0; }
+  .path { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; margin: 24px 0; position: relative; }
+  .station {
+    background: #fff; border: 3px solid var(--sc); border-radius: 20px; padding: 20px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .station .num {
+    width: 62px; height: 62px; border-radius: 50%; background: var(--sc); color: #fff;
+    font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .station h3 { font-size: 24px; margin: 4px 0 0; }
+  .station p { color: var(--muted); margin: 0; font-size: 16px; min-height: 3em; }
+  .station .best { font-weight: 700; min-height: 1.5em; }
+  .star-row { display: inline-flex; gap: 4px; }
+  .star-row svg { width: 34px; height: 34px; fill: #ddd; }
+  .star-row svg.on { fill: #f5b301; stroke: #c98f00; stroke-width: 1; }
+  .qfoot { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+
+  .hud { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .hud .badge { color: #fff; font-weight: 800; padding: 6px 16px; border-radius: 999px; font-size: 17px; }
+  .hud .pts { margin-left: auto; font-weight: 800; font-size: 20px; }
+  .bar { height: 14px; background: #e8e2d4; border-radius: 99px; flex: 1; min-width: 120px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--lc); width: 0; transition: width .4s; border-radius: 99px; }
+  .play-card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: clamp(18px, 3vw, 34px); min-height: 330px; }
+  .prompt { font-size: clamp(22px, 3vw, 30px); font-weight: 800; margin-bottom: 4px; }
+  .prompt .chip { font-size: .62em; vertical-align: middle; margin-left: 8px; }
+  .subprompt { color: var(--muted); font-size: 18px; min-height: 1.6em; margin-bottom: 8px; }
+  .play-card .sent { font-size: clamp(22px, 3.1vw, 32px); margin: 26px 0 40px; }
+  .feedback { font-size: 20px; font-weight: 700; min-height: 2.6em; }
+  .feedback.ok { color: #1c7a43; }
+  .feedback.no { color: #b3261e; }
+  .play-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .link-btn { background: none; border: 0; color: var(--muted); text-decoration: underline; font-size: 15px; cursor: pointer; padding: 8px; }
+
+  .result { text-align: center; padding: 20px 0; }
+  .result h1 { font-size: clamp(32px, 5vw, 48px); }
+  .result .star-row svg { width: 74px; height: 74px; }
+  .result .star-row svg.on { animation: pop .5s both; }
+  .result .star-row svg.on:nth-child(2) { animation-delay: .25s; }
+  .result .star-row svg.on:nth-child(3) { animation-delay: .5s; }
+  @keyframes pop { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.25) rotate(8deg); } 100% { transform: scale(1); } }
+  .result .big { font-size: 24px; font-weight: 800; margin: 14px 0 4px; }
+  .result .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+
+  .cert {
+    max-width: 760px; margin: 0 auto; background: #fffdf5; border: 10px double #c9a227; border-radius: 6px;
+    padding: 34px 36px; text-align: center;
+  }
+  .cert h1 { font-size: clamp(34px, 6vw, 54px); letter-spacing: 4px; margin-bottom: 4px; color: #8a6a00; }
+  .cert .name-in {
+    font-size: 30px; font-weight: 800; text-align: center; border: 0; border-bottom: 3px solid #333;
+    background: transparent; width: min(420px, 90%); padding: 6px; margin: 10px 0;
+    font-family: inherit; color: var(--ink);
+  }
+  .cert .rank { font-size: 30px; font-weight: 800; color: var(--brand-dark); margin: 8px 0; }
+  .cert table { margin: 14px auto; border-collapse: collapse; font-size: 18px; }
+  .cert td, .cert th { padding: 6px 16px; border-bottom: 1px solid #e3d9b0; }
+  .cert .star-row svg { width: 22px; height: 22px; }
+  .cert .total { font-size: 24px; font-weight: 800; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ---------- Druck ---------- */
+  @page { size: A4; margin: 14mm; }
+  @media print {
+    body { background: #fff; }
+    .top, .toolbar, .noprint, .stage-bar { display: none !important; }
+    main { padding: 0; max-width: none; }
+    body.printing .view:not(.print-target) { display: none !important; }
+    .print-hide { display: none !important; }
+    .ws, .doc, .cert { border: 0; padding: 0; margin: 0; max-width: none; border-radius: 0; }
+    .cert { border: 8px double #c9a227; padding: 20px; }
+    .ws.page-break { break-before: page; }
+    .ws-head { break-after: avoid; }
+    table.fk tr, .sol-item { break-inside: avoid; }
+    ol.wslist li { font-size: 17px; line-height: 2.5; }
+    .doc { break-inside: auto; margin-bottom: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">Satzglieder-Reise</div>
+  <nav class="nav" id="nav">
+    <button data-view="start">Start</button>
+    <button data-view="praesentation">Präsentation</button>
+    <button data-view="arbeitsblatt">Arbeitsblatt</button>
+    <button data-view="quiz">Quiz</button>
+    <span class="sep"></span>
+    <button data-view="loesungen" class="teacher">Lösungen</button>
+    <button data-view="tipps" class="teacher">Lehrertipps</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== START ===================== -->
+  <section id="view-start" class="view">
+    <div class="hero">
+      <h1>Satzglieder</h1>
+      <p class="lead">Wer macht was, wann, wo und warum? Heute findest du es heraus: zuerst gemeinsam, dann auf dem Arbeitsblatt und am Ende im Quiz.</p>
+      <div class="legend-row" id="start-legend"></div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <span class="step-num">1</span>
+        <h3>Präsentation</h3>
+        <p>Wir klären gemeinsam, welche Frage zu welchem Satzglied gehört.</p>
+        <button class="btn" data-goto="praesentation">Los geht's</button>
+      </div>
+      <div class="card">
+        <span class="step-num">2</span>
+        <h3>Arbeitsblatt</h3>
+        <p>Drei Level: Starter, Entdecker, Profi. Du suchst dir dein Level aus.</p>
+        <button class="btn" data-goto="arbeitsblatt">Zum Arbeitsblatt</button>
+      </div>
+      <div class="card">
+        <span class="step-num">3</span>
+        <h3>Quiz am iPad</h3>
+        <p>Tippe Satzglieder an, sammle Sterne und Punkte und hol dir deine Urkunde.</p>
+        <button class="btn" data-goto="quiz">Zum Quiz</button>
+      </div>
+      <div class="card teacher">
+        <h3>Nur für die Lehrkraft</h3>
+        <p>Lösungen zum Arbeitsblatt und Tipps für den Stundenverlauf. Beides ist mit einem Code geschützt.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost small" data-goto="loesungen">Lösungen</button>
+          <button class="btn ghost small" data-goto="tipps">Lehrertipps</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRÄSENTATION ===================== -->
+  <section id="view-praesentation" class="view">
+    <div class="toolbar noprint">
+      <button class="btn small ghost" id="btn-fullscreen">Vollbild</button>
+      <span class="note">Weiter mit Klick auf den Pfeil, der Leertaste oder der Pfeiltaste rechts.</span>
+    </div>
+    <div class="stage" id="stage">
+      <div class="slides" id="slides"></div>
+      <div class="stage-bar">
+        <button class="btn small ghost" id="s-prev">Zurück</button>
+        <div class="dots" id="s-dots"></div>
+        <span class="count" id="s-count"></span>
+        <button class="btn small" id="s-next">Weiter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ARBEITSBLATT ===================== -->
+  <section id="view-arbeitsblatt" class="view">
+    <div class="toolbar">
+      <button class="btn" id="btn-pdf">Als PDF herunterladen</button>
+      <button class="btn ghost small" data-print-level="1">Nur Level 1</button>
+      <button class="btn ghost small" data-print-level="2">Nur Level 2</button>
+      <button class="btn ghost small" data-print-level="3">Nur Level 3</button>
+      <span class="note">Im Druckfenster "Als PDF speichern" wählen. Die Fragenkarte ist immer dabei.</span>
+    </div>
+    <div id="worksheet"></div>
+  </section>
+
+  <!-- ===================== QUIZ ===================== -->
+  <section id="view-quiz" class="view">
+
+    <div class="qscreen" id="q-map">
+      <div class="qhead">
+        <h1>Deine Satzglieder-Reise</h1>
+        <p>Drei Stationen. Tippe die Satzglieder an und sammle Sterne.</p>
+      </div>
+      <div class="path" id="q-path"></div>
+      <div class="qfoot">
+        <button class="btn" id="q-cert-btn">Meine Urkunde</button>
+        <button class="btn ghost" id="q-reset">Neu starten</button>
+      </div>
+    </div>
+
+    <div class="qscreen" id="q-play">
+      <div class="hud">
+        <span class="badge" id="p-badge"></span>
+        <div class="bar"><i id="p-bar"></i></div>
+        <span class="pts" id="p-pts"></span>
+      </div>
+      <div class="play-card">
+        <div class="prompt" id="p-prompt"></div>
+        <div class="subprompt" id="p-sub"></div>
+        <div class="sent" id="p-sent"></div>
+        <div class="feedback" id="p-fb" aria-live="polite"></div>
+        <div class="play-actions">
+          <button class="link-btn" id="p-quit">Level abbrechen</button>
+          <button class="btn big" id="p-next" style="visibility:hidden">Weiter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="qscreen" id="q-result">
+      <div class="result" id="q-result-in"></div>
+    </div>
+
+    <div class="qscreen" id="q-cert">
+      <div class="cert" id="cert-box"></div>
+      <div class="qfoot noprint">
+        <button class="btn" id="cert-print">Urkunde drucken</button>
+        <button class="btn ghost" id="cert-back">Zurück zur Reise</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LÖSUNGEN ===================== -->
+  <section id="view-loesungen" class="view">
+    <div class="gate" data-gate>
+      <h2>Nur für die Lehrkraft</h2>
+      <p class="note">Bitte den Code eingeben.</p>
+      <form data-gate-form>
+        <input type="password" autocomplete="off" aria-label="Code" placeholder="Code">
+        <div class="err" aria-live="polite"></div>
+        <button class="btn" type="submit">Öffnen</button>
+      </form>
+    </div>
+    <div data-gate-content hidden>
+      <div class="toolbar">
+        <button class="btn" id="btn-print-sol">Lösungen drucken</button>
+        <span class="note">Farben und Beschriftung entsprechen der Fragenkarte.</span>
+      </div>
+      <div id="solutions"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TIPPS ===================== -->
+  <section id="view-tipps" class="view">
+    <div class="gate" data-gate>
+      <h2>Nur für die Lehrkraft</h2>
+      <p class="note">Bitte den Code eingeben.</p>
+      <form data-gate-form>
+        <input type="password" autocomplete="off" aria-label="Code" placeholder="Code">
+        <div class="err" aria-live="polite"></div>
+        <button class="btn" type="submit">Öffnen</button>
+      </form>
+    </div>
+    <div data-gate-content hidden>
+      <div class="toolbar">
+        <button class="btn" id="btn-print-tipps">Tipps drucken</button>
+      </div>
+      <div id="tips"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     Einstellungen
+     ========================================================= */
+  // Einfacher Schutz gegen neugierige Kinderaugen, kein echter Passwortschutz.
+  var TEACHER_CODE = 'kreide';
+  var STORE_KEY = 'satzglieder-quiz-v1';
+
+  /* =========================================================
+     Satzglieder und Daten
+     ========================================================= */
+  var ROLES = {
+    S:     { name: 'Subjekt',         short: 'Subjekt',     q: 'Wer oder Was?' },
+    P:     { name: 'Prädikat',        short: 'Prädikat',    q: 'Was tut jemand? Was geschieht?' },
+    AO:    { name: 'Akkusativobjekt', short: 'Akk.-Objekt', q: 'Wen oder Was?' },
+    DO:    { name: 'Dativobjekt',     short: 'Dat.-Objekt', q: 'Wem?' },
+    ORT:   { name: 'Ort',             short: 'Ort',         q: 'Wo?' },
+    ZEIT:  { name: 'Zeit',            short: 'Zeit',        q: 'Wann?' },
+    GRUND: { name: 'Grund',           short: 'Grund',       q: 'Warum?' }
+  };
+  var ORDER = ['S', 'P', 'AO', 'DO', 'ORT', 'ZEIT', 'GRUND'];
+
+  var HINT = {
+    S: 'Such zuerst das Prädikat. Dann frage: Wer oder Was + Prädikat?',
+    P: 'Das Prädikat ist das Verb. Es sagt, was jemand tut oder was passiert.',
+    AO: 'Frage: Wen oder Was + Prädikat + Subjekt? Die Antwort ist das Akkusativobjekt.',
+    DO: 'Frage: Wem? Meistens ist es eine Person, die etwas bekommt oder der etwas gehört.',
+    ORT: 'Frage: Wo? Es sagt, an welchem Ort etwas passiert.',
+    ZEIT: 'Frage: Wann? Es sagt, zu welcher Zeit etwas passiert.',
+    GRUND: 'Frage: Warum? Es sagt, aus welchem Grund etwas passiert.'
+  };
+
+  // Schreibweise: [Satzglied]CODE, danach optional ein Satzzeichen. Text ohne Klammern ist ohne Rolle.
+  var WS = {
+    1: [
+      '[Der Hund]S [bellt]P.',
+      '[Die kleine Katze]S [schläft]P.',
+      '[Meine Schwester]S [lacht]P.',
+      '[Der Bus]S [kommt]P.',
+      '[Unser Lehrer]S [schreibt]P [an die Tafel].',
+      '[Die Kinder aus der 6a]S [singen]P.',
+      '[Lena]S [liest]P [ein Buch].',
+      '[Der große Bruder von Mia]S [spielt]P.'
+    ],
+    2: [
+      '[Die Klasse]S [schreibt]P [am Montag]ZEIT [einen Test]AO.',
+      '[Mia]S [schenkt]P [ihrer Oma]DO [eine Blume]AO.',
+      '[Die Kinder]S [spielen]P [auf dem Schulhof]ORT [Fußball]AO.',
+      '[Leon]S [bleibt]P [wegen der Grippe]GRUND [zu Hause]ORT.',
+      '[Der Trainer]S [lobt]P [die Mannschaft]AO [nach dem Spiel]ZEIT.',
+      '[Tom]S [leiht]P [seinem Freund]DO [heute]ZEIT [einen Stift]AO.',
+      '[Die Lehrerin]S [liest]P [der Klasse]DO [im Sitzkreis]ORT [eine Geschichte]AO.',
+      '[Papa]S [kocht]P [uns]DO [am Sonntag]ZEIT [Nudeln]AO.'
+    ],
+    3: [
+      '[Gestern]ZEIT [habe]P [ich]S [meiner Freundin]DO [ein Buch]AO [geschenkt]P.',
+      '[Wir]S [räumen]P [nach dem Unterricht]ZEIT [das Klassenzimmer]AO [auf]P.',
+      '[Das Fußballspiel]S [fällt]P [wegen des Regens]GRUND [am Samstag]ZEIT [aus]P.',
+      '[Am Dienstag]ZEIT [hat]P [die Lehrerin]S [der Klasse]DO [die Tests]AO [zurückgegeben]P.',
+      '[Im Park]ORT [hat]P [Jonas]S [seinem Hund]DO [einen Ball]AO [geworfen]P.',
+      '[Wegen der Hitze]GRUND [sollen]P [die Kinder]S [im Schatten]ORT [bleiben]P.',
+      '[Nach dem Training]ZEIT [kauft]P [der Trainer]S [allen Spielern]DO [ein Eis]AO.',
+      '[Lina]S [hat]P [gestern]ZEIT [im Bus]ORT [ihr Handy]AO [vergessen]P.'
+    ]
+  };
+
+  var QUIZ = [
+    { id: 1, name: 'Starter', mode: 'chunk', color: 'var(--l1)',
+      desc: 'Subjekt und Prädikat finden.',
+      sentences: [
+        '[Der Hund]S [bellt]P.',
+        '[Die kleine Katze]S [schläft]P.',
+        '[Meine Schwester]S [malt]P [ein Bild].',
+        '[Die Kinder aus der 6a]S [singen]P.',
+        '[Unser Lehrer]S [trinkt]P [Kaffee].'
+      ] },
+    { id: 2, name: 'Entdecker', mode: 'chunk', color: 'var(--l2)',
+      desc: 'Dazu: Objekte, Ort, Zeit und Grund.',
+      sentences: [
+        '[Emma]S [schenkt]P [ihrem Bruder]DO [heute]ZEIT [ein Buch]AO.',
+        '[Die Kinder]S [bauen]P [im Garten]ORT [eine Hütte]AO.',
+        '[Max]S [trägt]P [wegen der Kälte]GRUND [eine Mütze]AO.',
+        '[Der Opa]S [erzählt]P [den Enkeln]DO [abends]ZEIT [eine Geschichte]AO.',
+        '[Die Katze]S [schläft]P [nach dem Essen]ZEIT [auf dem Sofa]ORT.'
+      ] },
+    { id: 3, name: 'Profi', mode: 'word', color: 'var(--l3)',
+      desc: 'Schwierigere Sätze. Das Prädikat hat oft zwei Teile.',
+      sentences: [
+        '[Heute]ZEIT [hat]P [Ben]S [seiner Mutter]DO [Blumen]AO [mitgebracht]P.',
+        '[Die Schüler]S [stellen]P [nach dem Unterricht]ZEIT [die Stühle]AO [hoch]P.',
+        '[Wegen des Gewitters]GRUND [muss]P [die Klasse]S [heute]ZEIT [im Schulhaus]ORT [bleiben]P.',
+        '[Der Hausmeister]S [hat]P [gestern]ZEIT [dem Trainer]DO [den Schlüssel]AO [gegeben]P.',
+        '[Mia]S [ruft]P [ihre Oma]AO [am Abend]ZEIT [an]P.'
+      ] }
+  ];
+
+  /* =========================================================
+     Hilfsfunktionen
+     ========================================================= */
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function parse(str) {
+    var segs = [], re = /\[([^\]]+)\]([A-Z]*)([.,!?]?)|([^\[\]]+)/g, m;
+    while ((m = re.exec(str))) {
+      if (m[1] !== undefined) {
+        if (m[2] && !ROLES[m[2]]) throw new Error('Unbekannte Rolle ' + m[2] + ' in: ' + str);
+        segs.push({ text: m[1].trim(), role: m[2] || '', punct: m[3] || '' });
+      } else {
+        var t = m[4].trim();
+        if (t) segs.push({ text: t, role: '', punct: '' });
+      }
+    }
+    return segs;
+  }
+
+  function tokens(segs, mode) {
+    var out = [];
+    segs.forEach(function (s, si) {
+      if (mode === 'word') {
+        var ws = s.text.split(/\s+/);
+        ws.forEach(function (w, wi) {
+          out.push({ text: w, seg: si, role: s.role, first: wi === 0, punct: wi === ws.length - 1 ? s.punct : '' });
+        });
+      } else {
+        out.push({ text: s.text, seg: si, role: s.role, first: true, punct: s.punct });
+      }
+    });
+    return out;
+  }
+
+  function labelHTML(t, show) {
+    return (t.first && t.role) ? '<i class="lab' + (show ? ' show' : '') + '">' + ROLES[t.role].short + '</i>' : '';
+  }
+
+  // Feste Anzeige (Folien, Lösungen, Fragenkarte)
+  function staticSentence(str, opts) {
+    opts = opts || {};
+    var segs = parse(str);
+    var html = tokens(segs, 'chunk').map(function (t, i) {
+      var on = !!t.role;
+      var step = opts.steps && opts.steps[i] ? ' data-step="' + opts.steps[i] + '"' : '';
+      return '<span class="tp"><span class="tok static' + (on ? ' on r-' + t.role : '') + '"' + step + '>' +
+        esc(t.text) + labelHTML(t, true) + '</span>' + (t.punct ? '<span class="pu">' + t.punct + '</span>' : '') + '</span>';
+    }).join('');
+    return '<div class="sent' + (opts.cls ? ' ' + opts.cls : '') + '">' + html + '</div>';
+  }
+
+  function plainText(str) {
+    return parse(str).map(function (s) { return s.text + s.punct; }).join(' ');
+  }
+
+  function chipHTML(role) {
+    return '<span class="chip r-' + role + '">' + ROLES[role].name + '</span>';
+  }
+
+  /* =========================================================
+     Navigation
+     ========================================================= */
+  var VIEWS = ['start', 'praesentation', 'arbeitsblatt', 'quiz', 'loesungen', 'tipps'];
+  var current = 'start';
+
+  function clearPrintState() {
+    document.body.classList.remove('printing');
+    $$('.print-target, .print-hide').forEach(function (e) { e.classList.remove('print-target', 'print-hide'); });
+  }
+
+  // Schüler-Link (?kind): nur das Quiz, keine Reiter für Präsentation, Lösungen und Tipps.
+  var KID = /[?&]kind(&|=|$)/.test(location.search);
+  if (KID) document.body.classList.add('kid');
+
+  function showView(name) {
+    if (KID) name = 'quiz';
+    if (VIEWS.indexOf(name) < 0) name = 'start';
+    current = name;
+    clearPrintState();
+    VIEWS.forEach(function (v) { $('#view-' + v).classList.toggle('active', v === name); });
+    $$('#nav button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-view') === name); });
+    if (name === 'quiz') quizEnter();
+    try { history.replaceState(null, '', '#' + name); } catch (e) { /* file:// kann das blockieren */ }
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', function (e) {
+    var nav = e.target.closest('[data-view]');
+    if (nav) { showView(nav.getAttribute('data-view')); return; }
+    var go = e.target.closest('[data-goto]');
+    if (go) showView(go.getAttribute('data-goto'));
+  });
+
+  /* =========================================================
+     Drucken
+     ========================================================= */
+  function doPrint(showSel, hideSels) {
+    clearPrintState();
+    document.body.classList.add('printing');
+    var target = $(showSel);
+    if (target) target.classList.add('print-target');
+    (hideSels || []).forEach(function (s) { var el = $(s); if (el) el.classList.add('print-hide'); });
+    window.addEventListener('afterprint', clearPrintState, { once: true });
+    window.print();
+  }
+
+  /* =========================================================
+     Startseite: Legende
+     ========================================================= */
+  $('#start-legend').innerHTML = ORDER.map(chipHTML).join('');
+
+  /* =========================================================
+     Präsentation
+     ========================================================= */
+  var UM = [
+    { t: 'die Katze', r: 'S' }, { t: 'schläft', r: 'P' }, { t: 'heute', r: 'ZEIT' }, { t: 'auf dem Sofa', r: 'ORT' }
+  ];
+  var PERMS = [[0, 1, 2, 3], [2, 1, 0, 3], [3, 1, 0, 2], [3, 1, 2, 0]];
+  var umIdx = 0;
+
+  function umHTML() {
+    return '<div class="um-box" id="umbox">' + UM.map(function (c, i) {
+      return '<span class="um r-' + c.r + (i === 0 ? ' first' : '') + '" style="order:' + i + '">' + c.t + '</span>';
+    }).join('') + '<span class="um-dot">.</span></div>';
+  }
+
+  var SLIDES = [
+    // 0 Titel
+    '<div class="title-slide-in">' +
+      '<h2>Satzglieder</h2>' +
+      '<p class="lead">Wer macht was, wann, wo und warum?</p>' +
+      '<div class="legend-row">' + ORDER.map(chipHTML).join('') + '</div>' +
+    '</div>',
+
+    // 1 Umstellen
+    '<h2>Ein Satz zieht um<small>Probiere es aus und tippe auf den Knopf.</small></h2>' +
+    umHTML() +
+    '<p><button class="btn" data-action="umstellen">Umstellen</button></p>' +
+    '<p class="merk">Die Wörter wandern nicht einzeln. Sie bleiben in Gruppen zusammen. Nur das Prädikat bleibt auf Platz 2.</p>',
+
+    // 2 Was ist ein Satzglied
+    '<h2>Was ist ein Satzglied?</h2>' +
+    '<p class="merk">Ein Satzglied ist ein Wort oder eine Wortgruppe, die beim Umstellen zusammenbleibt.</p>' +
+    '<div class="sent"><span class="tp"><span class="tok static on r-S">Die Katze</span></span>' +
+      '<span class="tp"><span class="tok static on r-P">schläft</span></span>' +
+      '<span class="tp"><span class="tok static on r-ZEIT">heute</span></span>' +
+      '<span class="tp"><span class="tok static on r-ORT">auf dem Sofa</span><span class="pu">.</span></span></div>' +
+    '<p class="reveal" data-step="1">Dieser Satz hat vier Satzglieder, obwohl er sieben Wörter hat.</p>',
+
+    // 3 Prädikat
+    '<h2>Das Prädikat<small>Das suchen wir immer zuerst.</small></h2>' +
+    '<div class="qline"><span class="chip r-P">Prädikat</span><b>Was tut jemand? Was geschieht?</b></div>' +
+    staticSentence('Die Katze [schläft]P heute auf dem Sofa.', { steps: { 1: 1 } }) +
+    '<p class="merk reveal" data-step="2">Das Prädikat ist das Verb. Im Aussagesatz steht es auf Platz 2.</p>' +
+    '<p class="reveal" data-step="3">Manchmal hat es zwei Teile:</p>' +
+    staticSentence('Ich [habe]P gestern [gelacht]P.', {}).replace('class="sent', 'data-step="3" class="reveal sent'),
+
+    // 4 Subjekt
+    '<h2>Das Subjekt</h2>' +
+    '<div class="qline"><span class="chip r-S">Subjekt</span><b>Wer oder Was + Prädikat?</b></div>' +
+    '<p>Wer oder was schläft?</p>' +
+    staticSentence('[Die Katze]S schläft heute auf dem Sofa.', { steps: { 0: 1 } }) +
+    '<p class="merk reveal" data-step="2">Die Katze schläft. Das Subjekt ist, wer etwas tut.</p>',
+
+    // 5 Akkusativobjekt
+    '<h2>Das Akkusativobjekt</h2>' +
+    '<div class="qline"><span class="chip r-AO">Akkusativobjekt</span><b>Wen oder Was?</b></div>' +
+    '<p>Wen oder was schenkt Mia?</p>' +
+    staticSentence('Mia schenkt ihrer Oma [eine Blume]AO.', { steps: { 1: 1 } }) +
+    '<p class="merk reveal" data-step="2">Die Blume wird verschenkt. Sie ist das Akkusativobjekt.</p>',
+
+    // 6 Dativobjekt
+    '<h2>Das Dativobjekt</h2>' +
+    '<div class="qline"><span class="chip r-DO">Dativobjekt</span><b>Wem?</b></div>' +
+    '<p>Wem schenkt Mia die Blume?</p>' +
+    staticSentence('Mia schenkt [ihrer Oma]DO eine Blume.', { steps: { 1: 1 } }) +
+    '<p class="merk reveal" data-step="2">Die Oma bekommt die Blume. Sie ist das Dativobjekt.</p>',
+
+    // 7 Ort Zeit Grund
+    '<h2>Ort, Zeit und Grund<small>Sie sagen, wo, wann und warum etwas passiert.</small></h2>' +
+    '<div class="qline"><span class="chip r-ORT">Ort</span><b>Wo?</b><span>Die Katze schläft <u>auf dem Sofa</u>.</span></div>' +
+    '<div class="qline reveal" data-step="1"><span class="chip r-ZEIT">Zeit</span><b>Wann?</b><span>Die Katze schläft <u>nach dem Essen</u>.</span></div>' +
+    '<div class="qline reveal" data-step="2"><span class="chip r-GRUND">Grund</span><b>Warum?</b><span>Lena bleibt <u>wegen der Grippe</u> zu Hause.</span></div>',
+
+    // 8 Fragenkarte
+    '<h2>Unsere Fragenkarte<small>Trage die Fragen auf deinem Arbeitsblatt ein.</small></h2>' +
+    '<div class="karten">' + ORDER.map(function (r) {
+      var ex = { S: 'Die Katze', P: 'schläft', AO: 'eine Blume', DO: 'ihrer Oma', ORT: 'auf dem Sofa', ZEIT: 'heute', GRUND: 'wegen der Grippe' }[r];
+      return '<div class="karte r-' + r + '"><b>' + ROLES[r].name + '</b><span class="q">' + ROLES[r].q + '</span><span class="ex">Beispiel: ' + ex + '</span></div>';
+    }).join('') + '</div>',
+
+    // 9 Gemeinsam üben
+    '<h2>Gemeinsam üben<small>Immer in dieser Reihenfolge: Prädikat, Subjekt, Objekte, Rest.</small></h2>' +
+    staticSentence('[Mia]S [schenkt]P [ihrer Oma]DO [heute]ZEIT [zu Hause]ORT [eine Blume]AO.', { steps: { 0: 2, 1: 1, 2: 4, 3: 5, 4: 6, 5: 3 } }) +
+    '<div class="qline reveal" data-step="1"><span class="chip r-P">Prädikat</span><span>Was tut Mia? Sie schenkt.</span></div>' +
+    '<div class="qline reveal" data-step="2"><span class="chip r-S">Subjekt</span><span>Wer schenkt? Mia.</span></div>' +
+    '<div class="qline reveal" data-step="3"><span class="chip r-AO">Akkusativobjekt</span><span>Wen oder was schenkt Mia? Eine Blume.</span></div>' +
+    '<div class="qline reveal" data-step="4"><span class="chip r-DO">Dativobjekt</span><span>Wem schenkt Mia die Blume? Ihrer Oma.</span></div>' +
+    '<div class="qline reveal" data-step="5"><span class="chip r-ZEIT">Zeit</span><span>Wann? Heute.</span></div>' +
+    '<div class="qline reveal" data-step="6"><span class="chip r-ORT">Ort</span><span>Wo? Zu Hause.</span></div>',
+
+    // 10 Level wählen
+    '<h2>Welches Level traust du dir zu?<small>Du darfst jederzeit wechseln.</small></h2>' +
+    '<div class="lvl-cards">' +
+      '<div class="lvl-card" style="background:var(--l1)"><h3>Level 1: Starter</h3><p>Subjekt und Prädikat finden.</p></div>' +
+      '<div class="lvl-card" style="background:var(--l2)"><h3>Level 2: Entdecker</h3><p>Dazu Objekte, Ort, Zeit und Grund.</p></div>' +
+      '<div class="lvl-card" style="background:var(--l3)"><h3>Level 3: Profi</h3><p>Schwierigere Sätze, zweiteiliges Prädikat, Umstellungen.</p></div>' +
+    '</div>' +
+    '<p class="merk">Auf dem Arbeitsblatt: Unterstreiche mit den Farben von der Fragenkarte.</p>',
+
+    // 11 Quiz
+    '<h2>Danach: das Quiz am iPad</h2>' +
+    '<p>Tippe im Satz das Satzglied an, nach dem gefragt wird. Für jede richtige Antwort gibt es Punkte:</p>' +
+    '<div class="qline"><b>3 Punkte</b><span>gleich richtig</span></div>' +
+    '<div class="qline"><b>2 Punkte</b><span>nach einem Fehler</span></div>' +
+    '<div class="qline"><b>1 Punkt</b><span>nach mehreren Fehlern</span></div>' +
+    '<p style="margin-top:18px">Am Ende bekommst du Sterne und eine Urkunde.</p>' +
+    '<p><button class="btn big" data-goto="quiz">Zum Quiz</button></p>'
+  ];
+
+  var sl = { cur: 0, shown: 0 };
+
+  function slideSteps(slide) {
+    var map = {};
+    $$('[data-step]', slide).forEach(function (el) {
+      var n = parseInt(el.getAttribute('data-step'), 10);
+      (map[n] = map[n] || []).push(el);
+    });
+    return Object.keys(map).map(Number).sort(function (a, b) { return a - b; }).map(function (k) { return map[k]; });
+  }
+
+  function renderSlides() {
+    $('#slides').innerHTML = SLIDES.map(function (h, i) {
+      return '<article class="slide' + (i === 0 ? ' title-slide' : '') + '" data-i="' + i + '">' + h + '</article>';
+    }).join('');
+    $('#s-dots').innerHTML = SLIDES.map(function () { return '<i></i>'; }).join('');
+    showSlide(0, false);
+  }
+
+  function showSlide(i, full) {
+    sl.cur = i;
+    $$('.slide').forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    var steps = slideSteps($$('.slide')[i]);
+    steps.forEach(function (group, k) { group.forEach(function (el) { el.classList.toggle('on', full || false); }); });
+    sl.shown = full ? steps.length : 0;
+    $$('#s-dots i').forEach(function (d, k) { d.classList.toggle('cur', k === i); });
+    $('#s-count').textContent = (i + 1) + ' / ' + SLIDES.length;
+    $('#s-prev').disabled = i === 0 && sl.shown === 0;
+    $('#s-next').disabled = i === SLIDES.length - 1 && sl.shown >= steps.length;
+  }
+
+  function slideNext() {
+    var slide = $$('.slide')[sl.cur], steps = slideSteps(slide);
+    if (sl.shown < steps.length) {
+      steps[sl.shown].forEach(function (el) { el.classList.add('on'); });
+      sl.shown++;
+      showSlideNav(steps.length);
+    } else if (sl.cur < SLIDES.length - 1) {
+      showSlide(sl.cur + 1, false);
+    }
+  }
+  function slidePrev() {
+    var slide = $$('.slide')[sl.cur], steps = slideSteps(slide);
+    if (sl.shown > 0) {
+      sl.shown--;
+      steps[sl.shown].forEach(function (el) { el.classList.remove('on'); });
+      showSlideNav(steps.length);
+    } else if (sl.cur > 0) {
+      showSlide(sl.cur - 1, true);
+    }
+  }
+  function showSlideNav(total) {
+    $('#s-prev').disabled = sl.cur === 0 && sl.shown === 0;
+    $('#s-next').disabled = sl.cur === SLIDES.length - 1 && sl.shown >= total;
+  }
+
+  function umstellen() {
+    var box = $('#umbox');
+    if (!box) return;
+    var els = $$('.um', box);
+    var first = els.map(function (e) { return e.getBoundingClientRect(); });
+    umIdx = (umIdx + 1) % PERMS.length;
+    PERMS[umIdx].forEach(function (idx, pos) {
+      els[idx].style.order = pos;
+      els[idx].classList.toggle('first', pos === 0);
+    });
+    var last = els.map(function (e) { return e.getBoundingClientRect(); });
+    els.forEach(function (e, i) {
+      e.style.transition = 'none';
+      e.style.transform = 'translate(' + (first[i].left - last[i].left) + 'px,' + (first[i].top - last[i].top) + 'px)';
+    });
+    void box.offsetWidth;
+    els.forEach(function (e) {
+      e.style.transition = 'transform .6s cubic-bezier(.2,.8,.2,1)';
+      e.style.transform = '';
+    });
+  }
+
+  $('#s-next').addEventListener('click', slideNext);
+  $('#s-prev').addEventListener('click', slidePrev);
+  $('#slides').addEventListener('click', function (e) {
+    if (e.target.closest('[data-action="umstellen"]')) umstellen();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (current !== 'praesentation') return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); slideNext(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); slidePrev(); }
+  });
+  $('#btn-fullscreen').addEventListener('click', function () {
+    var st = $('#stage');
+    try {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (st.requestFullscreen) st.requestFullscreen();
+    } catch (err) { /* Vollbild nicht verfügbar */ }
+  });
+
+  /* =========================================================
+     Arbeitsblatt
+     ========================================================= */
+  var LEVEL_META = {
+    1: { name: 'Level 1: Starter', stars: '★', color: 'var(--l1)', roles: ['S', 'P'],
+         task: 'Unterstreiche das Subjekt und das Prädikat mit den Farben von der Fragenkarte.' },
+    2: { name: 'Level 2: Entdecker', stars: '★★', color: 'var(--l2)', roles: ORDER,
+         task: 'Unterstreiche alle Satzglieder mit den Farben von der Fragenkarte. Fange immer mit dem Prädikat an.' },
+    3: { name: 'Level 3: Profi', stars: '★★★', color: 'var(--l3)', roles: ORDER,
+         task: 'Unterstreiche alle Satzglieder mit den Farben. Achtung: Das Prädikat kann aus zwei Teilen bestehen.' }
+  };
+
+  var EX = {
+    S: 'Mia schenkt ihrer Oma eine Blume.', P: 'Mia schenkt ihrer Oma eine Blume.',
+    AO: 'Mia schenkt ihrer Oma eine Blume.', DO: 'Mia schenkt ihrer Oma eine Blume.',
+    ORT: 'Die Katze schläft auf dem Sofa.', ZEIT: 'Die Katze schläft heute.', GRUND: 'Lena bleibt wegen der Grippe zu Hause.'
+  };
+  var EXMARK = {
+    S: '[Mia]S schenkt ihrer Oma eine Blume.', P: 'Mia [schenkt]P ihrer Oma eine Blume.',
+    AO: 'Mia schenkt ihrer Oma [eine Blume]AO.', DO: 'Mia schenkt [ihrer Oma]DO eine Blume.',
+    ORT: 'Die Katze schläft [auf dem Sofa]ORT.', ZEIT: 'Die Katze schläft [heute]ZEIT.',
+    GRUND: 'Lena bleibt [wegen der Grippe]GRUND zu Hause.'
+  };
+
+  function fragenkarte(filled) {
+    return '<table class="fk"><thead><tr><th>Satzglied</th><th>Meine Frage</th><th>Farbe</th><th>Beispiel</th></tr></thead><tbody>' +
+      ORDER.map(function (r) {
+        return '<tr class="r-' + r + '"><td><b>' + ROLES[r].name + '</b></td>' +
+          '<td class="blank">' + (filled ? '<b>' + ROLES[r].q + '</b>' : '') + '</td>' +
+          '<td style="width:90px"><span class="swatch"></span></td>' +
+          '<td>' + staticSentence(EXMARK[r], { cls: 'sm' }) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  var PRACTICE = {
+    1: '<h3 class="aufgabe">Aufgabe 2: Schreibe selbst</h3>' +
+       '<p>Schreibe zwei eigene Sätze. Unterstreiche das Subjekt und das Prädikat.</p>' +
+       '<div class="lines"><p></p><p></p><p></p><p></p></div>',
+    2: '<h3 class="aufgabe">Aufgabe 2: Ergänze die Sätze</h3>' +
+       '<p>Die Frage in der Klammer hilft dir. Schreibe ein passendes Satzglied in die Lücke.</p>' +
+       '<div class="lueck">' +
+       '1. Die Katze schläft <span class="gap"></span> <small>(Wo?)</small>.<br>' +
+       '2. <span class="gap"></span> <small>(Wann?)</small> gehen wir ins Schwimmbad.<br>' +
+       '3. Lukas bleibt <span class="gap"></span> <small>(Warum?)</small> zu Hause.<br>' +
+       '4. Sara gibt <span class="gap"></span> <small>(Wem?)</small> ein Geschenk.</div>',
+    3: '<h3 class="aufgabe">Aufgabe 2: Umstellprobe</h3>' +
+       '<p>Stelle den Satz um. Beginne mit dem Satzglied in der Klammer. Schreibe den ganzen Satz auf.</p>' +
+       '<p><b>1.</b> Mara hat ihrer Schwester gestern ein Eis gekauft. <small>(Gestern)</small></p>' +
+       '<div class="lines"><p></p></div>' +
+       '<p><b>2.</b> Mara hat ihrer Schwester gestern ein Eis gekauft. <small>(Ihrer Schwester)</small></p>' +
+       '<div class="lines"><p></p></div>' +
+       '<h3 class="aufgabe">Aufgabe 3: Profi-Rätsel</h3>' +
+       '<p>Schreibe einen Satz mit einem zweiteiligen Prädikat. Unterstreiche alle Satzglieder.</p>' +
+       '<div class="lines"><p></p><p></p></div>'
+  };
+
+  function renderWorksheet() {
+    var html = '';
+    html += '<div class="ws" id="ws-karte">' +
+      '<div class="ws-head"><h1>Satzglieder bestimmen</h1>' +
+      '<div class="sub">Deutsch, Klasse 6</div>' +
+      '<div class="fields"><span>Name:</span><span>Datum:</span><span>Klasse:</span></div></div>' +
+      '<h3 class="aufgabe" style="margin-top:0">Aufgabe 1: Meine Fragenkarte</h3>' +
+      '<div class="hinweis">Schreibe während der Präsentation die Fragen in die Karte. Danach brauchst du sie bei allen Aufgaben.</div>' +
+      fragenkarte(false) + '</div>';
+
+    [1, 2, 3].forEach(function (n) {
+      var m = LEVEL_META[n];
+      html += '<div class="ws page-break" id="ws-l' + n + '">' +
+        '<div class="lvl-band" style="background:' + m.color + '"><h2>' + m.name + '</h2><span class="stars">' + m.stars + '</span></div>' +
+        '<div class="fields" style="margin-bottom:10px"><span>Name:</span><span>Datum:</span></div>' +
+        '<h3 class="aufgabe" style="margin-top:6px">Aufgabe 1: Satzglieder bestimmen</h3>' +
+        '<p>' + m.task + '</p>' +
+        '<div class="farbleiste">' + m.roles.map(chipHTML).join('') + '</div>' +
+        '<ol class="wslist">' + WS[n].map(function (s) { return '<li>' + esc(plainText(s)) + '</li>'; }).join('') + '</ol>' +
+        PRACTICE[n] + '</div>';
+    });
+    $('#worksheet').innerHTML = html;
+  }
+
+  $('#btn-pdf').addEventListener('click', function () { doPrint('#view-arbeitsblatt'); });
+  $$('[data-print-level]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = b.getAttribute('data-print-level');
+      doPrint('#view-arbeitsblatt', [1, 2, 3].filter(function (k) { return String(k) !== n; }).map(function (k) { return '#ws-l' + k; }));
+    });
+  });
+
+  /* =========================================================
+     Lehrkraft: Code, Lösungen, Tipps
+     ========================================================= */
+  var unlocked = false;
+  try { unlocked = sessionStorage.getItem('lk-ok') === '1'; } catch (e) { /* ignorieren */ }
+
+  function applyGate() {
+    $$('[data-gate]').forEach(function (g) { g.hidden = unlocked; });
+    $$('[data-gate-content]').forEach(function (c) { c.hidden = !unlocked; });
+  }
+  $$('[data-gate-form]').forEach(function (f) {
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var inp = $('input', f), err = $('.err', f);
+      if (inp.value.trim().toLowerCase() === TEACHER_CODE) {
+        unlocked = true;
+        try { sessionStorage.setItem('lk-ok', '1'); } catch (x) { /* ignorieren */ }
+        inp.value = '';
+        applyGate();
+      } else {
+        err.textContent = 'Der Code stimmt nicht.';
+        inp.value = '';
+      }
+    });
+  });
+
+  function renderSolutions() {
+    var html = '<div class="doc" id="sol-karte"><h2>Fragenkarte (ausgefüllt)</h2>' + fragenkarte(true) + '</div>';
+    [1, 2, 3].forEach(function (n) {
+      var m = LEVEL_META[n];
+      html += '<div class="doc"><h2 style="color:' + m.color + '">' + m.name + '</h2>' +
+        '<h3>Aufgabe 1</h3>' +
+        WS[n].map(function (s, i) {
+          return '<div class="sol-item"><span class="n">' + (i + 1) + '.</span>' + staticSentence(maskRoles(s, m.roles)) + '</div>';
+        }).join('') + SOLUTION_EXTRA[n] + '</div>';
+    });
+    $('#solutions').innerHTML = html;
+  }
+
+  // Level 1 fragt nur Subjekt und Prädikat: andere Rollen werden in der Lösung nicht markiert.
+  function maskRoles(str, allowed) {
+    return str.replace(/\[([^\]]+)\]([A-Z]*)/g, function (all, txt, code) {
+      return code && allowed.indexOf(code) < 0 ? '[' + txt + ']' : all;
+    });
+  }
+
+  var SOLUTION_EXTRA = {
+    1: '<h3>Aufgabe 2</h3><p class="note">Eigene Sätze. Prüfen: Gibt es ein Verb? Wurde zuerst das Prädikat markiert, dann das Subjekt?</p>',
+    2: '<h3>Aufgabe 2 (Beispiele)</h3><ul>' +
+       '<li>Die Katze schläft <b>auf dem Sofa</b> / <b>im Körbchen</b> / <b>unter dem Tisch</b>.</li>' +
+       '<li><b>Am Freitag</b> / <b>Morgen</b> / <b>Nach der Schule</b> gehen wir ins Schwimmbad.</li>' +
+       '<li>Lukas bleibt <b>wegen der Grippe</b> / <b>wegen des Regens</b> / <b>wegen der Kopfschmerzen</b> zu Hause.</li>' +
+       '<li>Sara gibt <b>ihrer Freundin</b> / <b>dem Lehrer</b> / <b>ihm</b> ein Geschenk.</li></ul>' +
+       '<p class="note">Wichtig ist, dass die Frage in der Klammer wirklich beantwortet wird. Kurze Antworten wie "heute" sind richtig.</p>',
+    3: '<h3>Aufgabe 2 (Umstellprobe)</h3><ul>' +
+       '<li>Gestern hat Mara ihrer Schwester ein Eis gekauft.</li>' +
+       '<li>Ihrer Schwester hat Mara gestern ein Eis gekauft.</li></ul>' +
+       '<p class="note">Andere sinnvolle Umstellungen sind richtig, zum Beispiel "Ein Eis hat Mara ihrer Schwester gestern gekauft". Das Prädikat bleibt auf Platz 2, der zweite Teil ("gekauft") bleibt am Ende.</p>' +
+       '<h3>Aufgabe 3</h3><p class="note">Eigener Satz. Prüfen: Beide Teile des Prädikats markiert? Zum Beispiel "Ich habe gestern Fußball gespielt" oder "Wir räumen die Tische auf".</p>' +
+       '<p class="note"><b>Hinweis zu Satz 6:</b> "sollen ... bleiben" ist ein zweiteiliges Prädikat aus Modalverb und Vollverb. <b>Zu Satz 8:</b> "im Bus" ist hier eine Ortsangabe (Wo?).</p>'
+  };
+
+  $('#btn-print-sol').addEventListener('click', function () { doPrint('#view-loesungen'); });
+  $('#btn-print-tipps').addEventListener('click', function () { doPrint('#view-tipps'); });
+
+  function renderTips() {
+    $('#tips').innerHTML =
+      '<div class="doc"><h2>Stundenverlauf (45 Minuten)</h2>' +
+      '<table><thead><tr><th style="width:80px">Zeit</th><th style="width:170px">Phase</th><th>Was passiert</th></tr></thead><tbody>' +
+      '<tr><td>5 Min.</td><td>Einstieg</td><td>Folien 1 bis 3. Der Satz zieht um (Umstellprobe). Die Kinder sehen, dass Wörter in Gruppen wandern. Merksatz zum Begriff Satzglied vorlesen lassen.</td></tr>' +
+      '<tr><td>10 Min.</td><td>Erarbeitung</td><td>Folien 4 bis 9. Zu jedem Satzglied die Frage klären. Die Kinder tragen die Fragen in ihre Fragenkarte (Aufgabe 1) ein. Die Karte bleibt auf dem Tisch liegen.</td></tr>' +
+      '<tr><td>5 Min.</td><td>Gemeinsam üben</td><td>Folie 10. Der Satz wird Schritt für Schritt bestimmt. Reihenfolge laut mitsprechen lassen: Prädikat, Subjekt, Objekte, Rest.</td></tr>' +
+      '<tr><td>15 Min.</td><td>Arbeitsphase</td><td>Folie 11: Level wählen. Arbeitsblatt in Stillarbeit oder mit Partner. Level 1 mit dir als Ansprechpartnerin am Tisch, Level 3 selbstständig.</td></tr>' +
+      '<tr><td>10 Min.</td><td>Quiz und Sicherung</td><td>Quiz am iPad. Wer fertig ist, wechselt in das nächste Level. Zum Schluss nennen die Kinder ihre Punkte. Hefteintrag: Merksatz und Fragenkarte.</td></tr>' +
+      '</tbody></table></div>' +
+
+      '<div class="doc"><h2>Differenzierung</h2><ul>' +
+      '<li><b>Level 1 (Starter):</b> Kinder, die bei Prädikat und Subjekt noch unsicher sind. Es gibt nur zwei Satzglieder, aber manche Sätze enthalten eine Falle (zum Beispiel "ein Buch").</li>' +
+      '<li><b>Level 2 (Entdecker):</b> Alle sieben Satzglieder in einfachen Sätzen. Die Fragenkarte ist die Hauptstütze.</li>' +
+      '<li><b>Level 3 (Profi):</b> Satzgefüge werden umgestellt, das Prädikat ist oft zweiteilig (habe ... geschenkt, räumen ... auf, sollen ... bleiben). Im Quiz muss jedes Wort einzeln angetippt werden.</li>' +
+      '<li>Die Kinder wählen das Level selbst. Wenn jemand deutlich zu leicht oder zu schwer wählt, nach den ersten drei Sätzen noch einmal einen Wechsel anbieten.</li></ul></div>' +
+
+      '<div class="doc"><h2>Typische Fehler und Hilfen</h2>' +
+      '<table><thead><tr><th style="width:30%">Fehler</th><th>Hilfe</th></tr></thead><tbody>' +
+      '<tr><td>Bei zweiteiligem Prädikat nur ein Teil markiert</td><td>"Suche am Satzende noch ein Verb. Beide Teile gehören zusammen." Im Quiz hilft das Blinken nach drei Fehlern.</td></tr>' +
+      '<tr><td>Zuerst das Subjekt gesucht, aber falsch</td><td>Immer erst das Prädikat. Dann "Wer oder Was" mit dem Prädikat fragen.</td></tr>' +
+      '<tr><td>Dativ und Akkusativ vertauscht</td><td>Die Fragen laut sprechen: "Wem schenkt Mia...?" und "Wen oder Was schenkt Mia?". Das Dativobjekt ist fast immer eine Person.</td></tr>' +
+      '<tr><td>Nur ein Teil der Wortgruppe markiert ("Oma" statt "ihrer Oma")</td><td>Umstellprobe: Was wandert zusammen?</td></tr>' +
+      '<tr><td>Zeit und Ort verwechselt</td><td>Beide Fragen stellen: Wo? Wann? Eine passt immer nur.</td></tr>' +
+      '</tbody></table></div>' +
+
+      '<div class="doc"><h2>Quiz und Gewinner</h2><ul>' +
+      '<li>Pro Frage gibt es 3 Punkte (gleich richtig), 2 Punkte (nach einem Fehler) oder 1 Punkt. Sterne pro Level: 1 Stern fürs Schaffen, 2 Sterne ab 70 Prozent, 3 Sterne ab 90 Prozent.</li>' +
+      '<li>Die Level haben unterschiedlich viele Fragen (Level 1: 10, Level 2: 22, Level 3: 23). Deshalb gibt es einen Gewinner pro Level: höchste Punktzahl, bei Gleichstand weniger Fehler.</li>' +
+      '<li>Die Urkunde zeigt Name, Rang, Sterne und Punkte. Die Kinder rufen im Sitzkreis ihre Punkte, du schreibst sie an die Tafel.</li>' +
+      '<li>Der Spielstand wird nur auf dem jeweiligen Gerät gespeichert. Wenn zwei Kinder dasselbe iPad nutzen: "Neu starten" auf der Reisekarte.</li>' +
+      '<li>Zum Schummeln: Die Lösungen sind hinter dem Code "' + esc(TEACHER_CODE) + '" versteckt. Der Code steht oben im Skript der Datei und lässt sich dort ändern. Er hält Kinder ab, ist aber kein echter Passwortschutz.</li></ul></div>' +
+
+      '<div class="doc"><h2>Technik</h2><ul>' +
+      '<li>Die Datei ist komplett eigenständig. Sie braucht kein Internet und läuft im Browser von iPad, Laptop und Whiteboard-PC.</li>' +
+      '<li>Präsentation: im Reiter "Präsentation" auf Vollbild klicken. Mit der Leertaste oder dem Pfeil geht es Schritt für Schritt weiter.</li>' +
+      '<li>Arbeitsblatt drucken: "Als PDF herunterladen" öffnet das Druckfenster. Dort "Als PDF speichern" wählen oder direkt drucken. Mit "Nur Level 1/2/3" druckst du gezielt ein Level plus Fragenkarte.</li>' +
+      '<li>Für die Kinder gibt es einen eigenen Link (am Ende mit ?kind) und einen QR-Code zum Ausdrucken, siehe Datei qr.html. Über diesen Link sehen sie nur das Quiz, ohne Reiter für Lösungen und Tipps.</li></ul></div>' +
+
+      '<div class="doc"><h2>Hefteintrag (Vorschlag)</h2>' +
+      '<p class="merk">Ein Satzglied ist ein Wort oder eine Wortgruppe, die beim Umstellen zusammenbleibt. Wir bestimmen Satzglieder mit Fragen: Prädikat (Was tut jemand?), Subjekt (Wer oder Was?), Akkusativobjekt (Wen oder Was?), Dativobjekt (Wem?), Ort (Wo?), Zeit (Wann?), Grund (Warum?).</p></div>';
+  }
+
+  /* =========================================================
+     Quiz
+     ========================================================= */
+  QUIZ.forEach(function (lv) {
+    lv.items = lv.sentences.map(function (s) {
+      var segs = parse(s);
+      var roles = ORDER.filter(function (r) { return segs.some(function (x) { return x.role === r; }); });
+      return { segs: segs, roles: roles };
+    });
+    lv.qCount = lv.items.reduce(function (a, i) { return a + i.roles.length; }, 0);
+    lv.max = lv.qCount * 3;
+  });
+
+  var mem = null;
+  function loadState() {
+    var st = null;
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) st = JSON.parse(raw); } catch (e) { /* ignorieren */ }
+    if (!st || typeof st !== 'object') st = mem;
+    if (!st || typeof st !== 'object') st = {};
+    if (typeof st.name !== 'string') st.name = '';
+    if (!st.best || typeof st.best !== 'object') st.best = {};
+    return st;
+  }
+  function saveState(st) {
+    mem = st;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) { /* ignorieren */ }
+  }
+
+  var STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.6 5.6 21.2l1.6-7.1L1.8 9.3 9 8.6z"/></svg>';
+  function starsHTML(n) {
+    var h = '<span class="star-row" role="img" aria-label="' + n + ' von 3 Sternen">';
+    for (var i = 0; i < 3; i++) h += STAR_SVG.replace('<svg', '<svg class="' + (i < n ? 'on' : '') + '"');
+    return h + '</span>';
+  }
+  function starsFor(pts, max) {
+    var p = pts / max;
+    return p >= 0.9 ? 3 : p >= 0.7 ? 2 : 1;
+  }
+
+  function qShow(id) {
+    $$('.qscreen').forEach(function (s) { s.classList.toggle('active', s.id === id); });
+    window.scrollTo(0, 0);
+  }
+
+  function quizEnter() {
+    game = null;
+    renderMap();
+    qShow('q-map');
+  }
+
+  function renderMap() {
+    var st = loadState();
+    $('#q-path').innerHTML = QUIZ.map(function (lv) {
+      var b = st.best[lv.id];
+      return '<div class="station" style="--sc:' + lv.color + '">' +
+        '<div class="num">' + lv.id + '</div>' +
+        '<h3>' + lv.name + '</h3>' +
+        '<p>' + lv.desc + '</p>' +
+        starsHTML(b ? b.stars : 0) +
+        '<div class="best">' + (b ? b.pts + ' von ' + b.max + ' Punkten' : '') + '</div>' +
+        '<button class="btn" data-start="' + lv.id + '" style="background:' + lv.color + '">' + (b ? 'Nochmal spielen' : 'Los geht\'s') + '</button>' +
+      '</div>';
+    }).join('');
+    $('#q-cert-btn').disabled = !Object.keys(st.best).length;
+  }
+
+  $('#q-path').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-start]');
+    if (b) startLevel(parseInt(b.getAttribute('data-start'), 10));
+  });
+
+  var resetTimer = null;
+  $('#q-reset').addEventListener('click', function () {
+    var btn = this;
+    if (btn.getAttribute('data-sure') === '1') {
+      clearTimeout(resetTimer);
+      btn.removeAttribute('data-sure');
+      btn.textContent = 'Neu starten';
+      saveState({ name: '', best: {} });
+      renderMap();
+    } else {
+      btn.setAttribute('data-sure', '1');
+      btn.textContent = 'Wirklich alles löschen?';
+      resetTimer = setTimeout(function () {
+        btn.removeAttribute('data-sure');
+        btn.textContent = 'Neu starten';
+      }, 4000);
+    }
+  });
+
+  /* ---------- Spielablauf ---------- */
+  var game = null;
+  var PRAISE = ['Richtig!', 'Genau!', 'Stark!', 'Treffer!', 'Super gemacht!'];
+
+  function startLevel(id) {
+    var lv = QUIZ.filter(function (l) { return l.id === id; })[0];
+    if (!lv) return;
+    game = { lv: lv, si: 0, ri: 0, pts: 0, mist: 0, qm: 0, done: 0, lock: false, toks: [], btns: [], marked: 0, need: 0 };
+    $('#p-badge').textContent = 'Level ' + lv.id + ': ' + lv.name;
+    $('#p-badge').style.background = lv.color;
+    $('#p-bar').style.setProperty('--lc', lv.color);
+    qShow('q-play');
+    loadSentence();
+  }
+
+  function updateHUD() {
+    $('#p-pts').textContent = game.pts + ' Punkte';
+    $('#p-bar').style.width = Math.round(game.done / game.lv.qCount * 100) + '%';
+  }
+
+  function loadSentence() {
+    var g = game, item = g.lv.items[g.si];
+    g.ri = 0;
+    g.toks = tokens(item.segs, g.lv.mode);
+    $('#p-sent').innerHTML = g.toks.map(function (t, i) {
+      return '<span class="tp"><button type="button" class="tok" data-i="' + i + '">' + esc(t.text) + labelHTML(t, false) + '</button>' +
+        (t.punct ? '<span class="pu">' + t.punct + '</span>' : '') + '</span>';
+    }).join('');
+    g.btns = $$('#p-sent .tok');
+    $('#p-next').style.visibility = 'hidden';
+    updateHUD();
+    askQuestion();
+  }
+
+  function askQuestion() {
+    var g = game, item = g.lv.items[g.si], role = item.roles[g.ri];
+    var target = g.toks.filter(function (t) { return t.role === role; });
+    g.qm = 0; g.marked = 0; g.need = target.length; g.lock = false;
+    var multiPred = role === 'P' && new Set(target.map(function (t) { return t.seg; })).size > 1;
+    $('#p-prompt').innerHTML = 'Tippe an: ' + ROLES[role].name + chipHTMLInline(role);
+    var sub = '';
+    if (multiPred) sub = 'Das Prädikat hat hier zwei Teile. Tippe beide an.';
+    else if (g.lv.mode === 'word' && g.need > 1) sub = 'Das Satzglied besteht aus mehreren Wörtern. Tippe alle an.';
+    $('#p-sub').textContent = sub;
+    setFeedback('', '');
+    g.btns.forEach(function (b) { b.classList.remove('pulse'); });
+  }
+
+  function chipHTMLInline(role) {
+    return '<span class="chip r-' + role + '">' + ROLES[role].q + '</span>';
+  }
+
+  function setFeedback(text, cls) {
+    var fb = $('#p-fb');
+    fb.textContent = text;
+    fb.className = 'feedback' + (cls ? ' ' + cls : '');
+  }
+
+  $('#p-sent').addEventListener('click', function (e) {
+    var b = e.target.closest('.tok');
+    if (!b || !game || game.lock) return;
+    onTap(parseInt(b.getAttribute('data-i'), 10));
+  });
+
+  function onTap(i) {
+    var g = game, t = g.toks[i], btn = g.btns[i];
+    if (!t || btn.classList.contains('on')) return;
+    var role = g.lv.items[g.si].roles[g.ri];
+    if (t.role === role) {
+      btn.classList.remove('pulse');
+      btn.classList.add('on', 'r-' + role);
+      g.marked++;
+      if (g.marked >= g.need) roleDone(role);
+    } else {
+      g.qm++; g.mist++;
+      btn.classList.add('wrong');
+      setTimeout(function () { btn.classList.remove('wrong'); }, 450);
+      setFeedback('Noch nicht. ' + HINT[role], 'no');
+      if (g.qm >= 3) {
+        g.toks.forEach(function (tt, k) { if (tt.role === role) g.btns[k].classList.add('pulse'); });
+      }
+    }
+  }
+
+  function roleDone(role) {
+    var g = game, got = 3 - Math.min(2, g.qm);
+    g.lock = true;
+    g.pts += got;
+    g.done++;
+    g.toks.forEach(function (t, k) {
+      if (t.role === role) $$('.lab', g.btns[k]).forEach(function (l) { l.classList.add('show'); });
+    });
+    var praise = got === 3 ? PRAISE[Math.floor(Math.random() * PRAISE.length)] : 'Geschafft. Beim nächsten Mal klappt es noch schneller.';
+    setFeedback(praise + ' +' + got + (got === 1 ? ' Punkt' : ' Punkte'), 'ok');
+    updateHUD();
+    var item = g.lv.items[g.si];
+    setTimeout(function () {
+      if (!game || game !== g) return;
+      g.ri++;
+      if (g.ri < item.roles.length) {
+        askQuestion();
+      } else {
+        sentenceDone();
+      }
+    }, 900);
+  }
+
+  function sentenceDone() {
+    var g = game, last = g.si >= g.lv.items.length - 1;
+    $('#p-prompt').innerHTML = 'Satz geschafft!';
+    $('#p-sub').textContent = 'So sieht der Satz mit allen Satzgliedern aus.';
+    setFeedback('', '');
+    var nb = $('#p-next');
+    nb.textContent = last ? 'Zur Auswertung' : 'Nächster Satz';
+    nb.style.visibility = 'visible';
+    g.lock = true;
+  }
+
+  $('#p-next').addEventListener('click', function () {
+    var g = game;
+    if (!g) return;
+    if (g.si >= g.lv.items.length - 1) { finishLevel(); }
+    else { g.si++; loadSentence(); }
+  });
+
+  $('#p-quit').addEventListener('click', function () { quizEnter(); });
+
+  function finishLevel() {
+    var g = game, lv = g.lv, stars = starsFor(g.pts, lv.max);
+    var st = loadState(), old = st.best[lv.id];
+    var better = !old || g.pts > old.pts || (g.pts === old.pts && g.mist < old.mist);
+    if (better) st.best[lv.id] = { pts: g.pts, max: lv.max, stars: stars, mist: g.mist };
+    saveState(st);
+    var msg = stars === 3 ? 'Fast fehlerfrei. Du bist ein Satzglied-Profi!' :
+              stars === 2 ? 'Sehr gut gemacht. Mit weniger Fehlern gibt es den dritten Stern.' :
+              'Geschafft! Schau dir die Fragenkarte an und versuche es noch einmal.';
+    var next = QUIZ.filter(function (l) { return l.id === lv.id + 1; })[0];
+    $('#q-result-in').innerHTML =
+      '<h1>Level ' + lv.id + ' geschafft!</h1>' +
+      starsHTML(stars) +
+      '<div class="big">' + g.pts + ' von ' + lv.max + ' Punkten</div>' +
+      '<p>' + g.mist + (g.mist === 1 ? ' Fehler' : ' Fehler') + '. ' + msg + '</p>' +
+      '<div class="btns">' +
+        (next ? '<button class="btn big" id="r-next">Weiter zu Level ' + next.id + '</button>' : '') +
+        '<button class="btn ghost" id="r-again">Nochmal spielen</button>' +
+        '<button class="btn ghost" id="r-map">Zur Reisekarte</button>' +
+        '<button class="btn ghost" id="r-cert">Meine Urkunde</button>' +
+      '</div>';
+    game = null;
+    qShow('q-result');
+    var rn = $('#r-next'); if (rn) rn.addEventListener('click', function () { startLevel(next.id); });
+    $('#r-again').addEventListener('click', function () { startLevel(lv.id); });
+    $('#r-map').addEventListener('click', quizEnter);
+    $('#r-cert').addEventListener('click', showCert);
+  }
+
+  /* ---------- Urkunde ---------- */
+  function rankFor(p) {
+    return p >= 0.9 ? 'Satzglied-Meister' : p >= 0.7 ? 'Satzglied-Profi' : p >= 0.5 ? 'Satzglied-Entdecker' : 'Satzglied-Starter';
+  }
+
+  function showCert() {
+    var st = loadState(), sumP = 0, sumM = 0, rows = '';
+    QUIZ.forEach(function (lv) {
+      var b = st.best[lv.id];
+      if (b) { sumP += b.pts; sumM += b.max; }
+      rows += '<tr><td>Level ' + lv.id + ' ' + lv.name + '</td><td>' + (b ? starsHTML(b.stars) : '') + '</td><td>' + (b ? b.pts + ' von ' + b.max : 'noch offen') + '</td></tr>';
+    });
+    var pct = sumM ? sumP / sumM : 0;
+    $('#cert-box').innerHTML =
+      '<h1>URKUNDE</h1>' +
+      '<p>für</p>' +
+      '<input class="name-in" id="cert-name" type="text" maxlength="30" placeholder="Dein Name" value="' + esc(st.name) + '" aria-label="Dein Name">' +
+      '<p>Du hast die Satzglieder-Reise gemeistert und bist</p>' +
+      '<div class="rank">' + (sumM ? rankFor(pct) : 'noch am Anfang') + '</div>' +
+      '<table><tbody>' + rows + '</tbody></table>' +
+      '<div class="total">Gesamt: ' + sumP + ' Punkte</div>' +
+      '<p class="note" style="margin-top:14px">' + new Date().toLocaleDateString('de-DE') + '</p>';
+    $('#cert-name').addEventListener('input', function () {
+      var s = loadState(); s.name = this.value; saveState(s);
+    });
+    qShow('q-cert');
+  }
+
+  $('#q-cert-btn').addEventListener('click', showCert);
+  $('#cert-back').addEventListener('click', quizEnter);
+  $('#cert-print').addEventListener('click', function () {
+    var inp = $('#cert-name');
+    if (inp) inp.setAttribute('value', inp.value);
+    doPrint('#view-quiz', ['#q-map', '#q-play', '#q-result']);
+  });
+
+  /* =========================================================
+     Start
+     ========================================================= */
+  renderSlides();
+  renderWorksheet();
+  renderSolutions();
+  renderTips();
+  applyGate();
+  var startView = (location.hash || '').replace('#', '');
+  showView(VIEWS.indexOf(startView) >= 0 ? startView : 'start');
+  window.addEventListener('hashchange', function () {
+    var h = (location.hash || '').replace('#', '');
+    if (VIEWS.indexOf(h) >= 0 && h !== current) showView(h);
+  });
+})();
+</script>
+</body>
+</html>
